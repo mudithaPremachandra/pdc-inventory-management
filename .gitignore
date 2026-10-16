@@ -1,0 +1,18 @@
+# Owner: Sanjaya (Query side (read model API) and Docker deployment).
+
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+.venv/
+venv/
+.env
+.idea/
+.vscode/
+
+# Session handover (local scratch, not a deliverable)
+session_handover_summary.md
+session-handover-summaries/

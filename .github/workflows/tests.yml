@@ -1,0 +1,11 @@
+# Owner: Kavindi (Test automation).
+
+name: tests
+
+on: workflow_dispatch
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Owner: Kavindi"

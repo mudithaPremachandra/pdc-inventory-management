@@ -1,0 +1,4 @@
+# Normalise line endings in the repo. Shell scripts must keep LF even on Windows,
+# or Git Bash / WSL / the Linux containers fail on the \r.
+* text=auto
+*.sh text eol=lf
