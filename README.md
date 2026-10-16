@@ -86,6 +86,7 @@ docs/                   architecture, test plan
 
 | Member | Part | Files (the full brief is in the first file listed) |
 |---|---|---|
+| **Muditha** | Team lead / tech lead | `README.md`, `docs/ARCHITECTURE.md`, `.gitattributes`, the `__init__.py` package files |
 | **Disaan** | Domain model | `src/inventory/domain/product.py`, `events.py`, `aggregate.py`, `errors.py` |
 | **Geethika** | Command side (write) | `src/inventory/commands/handlers.py`, `commands.py`, `api.py` |
 | **Janani** | Projections | `src/inventory/projections/projector.py`, `handlers.py`, `rebuild.py` |
@@ -95,5 +96,3 @@ docs/                   architecture, test plan
 | **Sanjaya** | Query side (read) and Docker deployment | `src/inventory/queries/queries.py`, `time_travel.py`, `api.py`, `src/inventory/config.py`, `docker-compose.yml`, `Dockerfile`, `.dockerignore`, `.env.example`, `.gitignore`, `requirements.txt`, `pyproject.toml` |
 | **Kavindi** | Test automation | `tests/conftest.py`, `tests/integration/*`, `tests/e2e/*`, `scripts/run-tests.*`, `.github/workflows/tests.yml` |
 | **Sarangi** | Testing (unit tests, test plan) | `docs/TEST_PLAN.md`, `tests/unit/*` |
-
-Shared files with no owner: `README.md`, `docs/ARCHITECTURE.md`, `.gitattributes` and the empty `__init__.py` files.
