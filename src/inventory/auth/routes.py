@@ -1,4 +1,4 @@
-# Owner: Sandun (Authentication and access management).
+
 """Login and user-management endpoints, mounted on the command-api.
 
 User changes are commands like any other: they go through the same
