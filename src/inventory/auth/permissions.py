@@ -1,4 +1,4 @@
-# Owner: Sandun (Authentication and access management).
+
 
 """Role-based access control (RBAC).
 
