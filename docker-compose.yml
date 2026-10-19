@@ -1,1 +1,126 @@
-# Owner: Sanjaya (Query side (read model API) and Docker deployment).
+
+
+name: pdc-inventory
+
+# Settings shared by every Python service. Values come from .env (see .env.example)
+# and fall back to the defaults after ":-" so `docker compose up` works out of the box.
+x-app-env: &app-env
+  DATABASE_URL: postgresql://${POSTGRES_USER:-inventory}:${POSTGRES_PASSWORD:-inventory}@postgres:5432/${POSTGRES_DB:-inventory}
+  JWT_SECRET: ${JWT_SECRET:-change-me-to-a-long-random-string}
+  JWT_EXPIRY_MINUTES: ${JWT_EXPIRY_MINUTES:-120}
+  ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+  COMMAND_API_URL: http://command-api:8001
+  QUERY_API_URL: http://query-api:8002
+  # Times are stored in UTC; the CLI shows them in this zone.
+  TZ: ${TZ:-Asia/Colombo}
+
+x-app: &app
+  build: .
+  image: pdc-inventory:latest
+  restart: unless-stopped
+  environment: *app-env
+  depends_on:
+    postgres:
+      condition: service_healthy
+
+services:
+  # Event store (public.events) and read models (read.*) live here.
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-inventory}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-inventory}
+      POSTGRES_DB: ${POSTGRES_DB:-inventory}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    # Host port 5433 so it doesn't clash with a locally installed PostgreSQL.
+    # Connect from your machine with: psql -h localhost -p 5433 -U inventory inventory
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U ${POSTGRES_USER:-inventory} -d ${POSTGRES_DB:-inventory}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  # WRITE side: accepts commands and appends events. Never reads the read models.
+  command-api:
+    <<: *app
+    command: uvicorn inventory.commands.api:app --host 0.0.0.0 --port 8001
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Bridge between the sides: reads new events and updates the read models.
+  projector:
+    <<: *app
+    command: python -m inventory.projections.projector
+
+  # READ side: answers queries from the read models. Never appends events.
+  query-api:
+    <<: *app
+    command: uvicorn inventory.queries.api:app --host 0.0.0.0 --port 8002
+    ports:
+      - "8002:8002"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Interactive client:  docker compose run --rm cli
+  cli:
+    <<: *app
+    restart: "no"
+    command: inventory
+    stdin_open: true
+    tty: true
+    profiles: ["cli"]
+    depends_on:
+      command-api:
+        condition: service_healthy
+      query-api:
+        condition: service_healthy
+
+  # Throwaway database for the automated tests (kept in memory, wiped on every run).
+  postgres-test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: inventory
+      POSTGRES_PASSWORD: inventory
+      POSTGRES_DB: inventory_test
+    volumes:
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U inventory -d inventory_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    profiles: ["test"]
+
+  # docker compose --profile test run --rm tests
+  tests:
+    build: .
+    image: pdc-inventory:latest
+    command: pytest -v --cov=inventory --cov-report=term-missing
+    environment:
+      DATABASE_URL: postgresql://inventory:inventory@postgres-test:5432/inventory_test
+      JWT_SECRET: test-secret
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin123
+    depends_on:
+      postgres-test:
+        condition: service_healthy
+    profiles: ["test"]
+
+volumes:
+  pgdata:
