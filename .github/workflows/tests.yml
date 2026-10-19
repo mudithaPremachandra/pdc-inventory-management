@@ -1,11 +1,24 @@
-# Owner: Kavindi (Test automation).
 
 name: tests
 
-on: workflow_dispatch
+on:
+  push:
+  pull_request:
 
 jobs:
-  tests:
+  test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - run: echo "Owner: Kavindi"
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker compose --profile test build tests
+
+      - name: Run unit, integration and e2e tests
+        run: docker compose --profile test run --rm tests pytest -v --cov=inventory --cov-report=term-missing
+
+      - name: Stop test database
+        if: always()
+        run: docker compose --profile test down -v
+
