@@ -1,4 +1,4 @@
-# Owner: Sandun (Authentication and access management).
+
 """The User aggregate: users are event-sourced exactly like products.
 
 Stream id is `user-<username>`, so "username already taken" is enforced by the
