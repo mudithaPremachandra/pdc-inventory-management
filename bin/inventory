@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# Lets Git Bash, macOS and Linux shells find `inventory` on the PATH. The logic is in scripts/inventory.sh.
+exec sh "$(dirname "$0")/../scripts/inventory.sh" "$@"

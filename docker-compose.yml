@@ -88,6 +88,8 @@ services:
         condition: service_healthy
       query-api:
         condition: service_healthy
+      projector:
+        condition: service_started
 
   # Throwaway database for the automated tests (kept in memory, wiped on every run).
   postgres-test:

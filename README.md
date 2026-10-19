@@ -18,8 +18,10 @@ Requirements: Docker Desktop (or Docker Engine + Compose v2).
 ```bash
 cp .env.example .env              # optional: change passwords / JWT secret
 docker compose up -d --build      # postgres, command-api, projector, query-api
-docker compose run --rm cli       # open the CLI
+docker compose run --rm cli       # open the CLI (also starts anything not running yet)
 ```
+
+Or install the `inventory` command once with `scripts\setup.cmd` (Windows) or `sh scripts/setup.sh` (Git Bash, macOS, Linux). It adds the command to your PATH and starts the system. Then, from any folder in a new terminal: `inventory` (open the CLI), `inventory start`, `inventory stop`, `inventory --help` for the rest.
 
 ```
 inventory(not logged in)> login admin            # password: admin123 (from .env)

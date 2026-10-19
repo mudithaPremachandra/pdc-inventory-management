@@ -2,3 +2,5 @@
 # or Git Bash / WSL / the Linux containers fail on the \r.
 * text=auto
 *.sh text eol=lf
+*.cmd text eol=crlf
+bin/inventory text eol=lf
