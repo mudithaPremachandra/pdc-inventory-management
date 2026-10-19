@@ -1,4 +1,4 @@
-# Owner: Sandun (Authentication and access management).
+
 """JWT access tokens.
 
 The command-api issues a token at login; both APIs verify it with the same shared
